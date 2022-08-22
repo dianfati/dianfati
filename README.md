@@ -1,10 +1,52 @@
-- 👋 Hi, I’m @dianfati
-- 👀 I’m interested in ...
-- 🌱 I’m currently learning ...
-- 💞️ I’m looking to collaborate on ...
-- 📫 How to reach me ...
-
-<!---
-dianfati/dianfati is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+name: ZactechRDP
+ 
+on: workflow_dispatch
+ 
+jobs:
+ 
+  build:
+ 
+    runs-on: windows-latest
+ 
+    timeout-minutes: 9999
+ 
+    steps:
+ 
+    - name: Download Ngrok.
+ 
+      run: |
+        Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+        Invoke-WebRequest https://raw.githubusercontent.com/Zakybotz/Rdp-Free/master/start.bat -OutFile start.bat
+        Invoke-WebRequest https://raw.githubusercontent.com/Zakybotz/Rdp-Free/master/wallpaper.bat -OutFile wallpaper.bat
+        Invoke-WebRequest https://raw.githubusercontent.com/Zakybotz/Rdp-Free/master/loop.bat -OutFile loop.bat
+        Invoke-WebRequest https://raw.githubusercontent.com/Zakybotz/Rdp-Free/master/start.bat -OutFile push.bat
+    - name: Extract Ngrok File.
+ 
+      run: Expand-Archive ngrok.zip
+ 
+    - name: Connect Ngrok.
+ 
+      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+ 
+      env:
+ 
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+ 
+    - name: Windows10 RDP.
+ 
+      run: |
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+        copy wallpaper.bat D:\a\wallpaper.bat
+    - name: Tunnel.
+ 
+      run: Start-Process Powershell -ArgumentList '-Noexit -Command ".\ngrok\ngrok.exe tcp --region ap 3389"'
+ 
+    - name: Connect RDP.
+ 
+      run: cmd /c start.bat
+ 
+    - name: win10 RDP.
+ 
+      run: cmd /c loop.bat
